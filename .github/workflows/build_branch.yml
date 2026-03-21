@@ -19,20 +19,17 @@ jobs:
           ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-          cache: true
-
-      - name: Build Project
+      - name: Configure Go proxy credentials
         run: |
-          GOOS=linux GOARCH=amd64 make build
-          GOOS=darwin GOARCH=arm64 make build
+          cat >> ~/.netrc <<EOF
+          machine goproxy.pazer.io login ${{ secrets.GOPROXY_USER }} password ${{ secrets.GOPROXY_PASSWORD }}
+          EOF
+          chmod 600 ~/.netrc
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ github.event.inputs.branch }}
-          path: build/
-          retention-days: 7
+      - name: Go Toolchain
+        uses: wow-look-at-my/go-toolchain@v1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.GO_BUILDCACHE_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.GO_BUILDCACHE_ACCESS_KEY }}
+          GOCACHE_S3_ENDPOINT: ${{ secrets.GO_BUILDCACHE_ENDPOINT }}
+          GOCACHE_S3_REGION: ${{ secrets.GO_BUILDCACHE_REGION }}

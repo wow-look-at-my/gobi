@@ -37,7 +37,7 @@ To set up a basic flow pipeline, download Gobi and GoFlow2 to your local machine
 Then start the pipeline with the following command:
 
 ```
-$ ./goflow2 -transport.file.sep= -format=pb -format.protobuf.fixedlen=true | ./gobi -f gobi.yml
+$ ./goflow2 -format=bin | ./gobi -f gobi.yml
 ```
 
  The pipeline is now ready to be scraped by Prometheus server at the IP address of your local machine. A full config keys list supported by `gobi.yml` is available [here](./doc/CONFIG-GUIDE.md). The provided [examples](./examples/README.md) are a good starting point for Gobi deployments.
@@ -48,7 +48,7 @@ Gobi is modular. The `producer` receives input flow data, converts it in go stru
 
 ### The GoFlow2 producer
 
-It takes its input from stdin or a named pipe. The expected format is GPB, as defined by GoFlow2 proto [file](https://github.com/netsampler/goflow2/blob/v1.1.0/pb/flow.proto) *(not all fields are currently exported)*. Each flow is then enriched with data coming from these popular DBs:
+It takes its input from stdin or a named pipe. The expected format is the binary (bin) format, as defined by GoFlow2 proto [file](https://github.com/netsampler/goflow2/blob/v2.2.6/pb/flow.proto) *(not all fields are currently exported)*. Each flow is then enriched with data coming from these popular DBs:
 
 * MaxMind [GeoLite2 Country](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en).
 * MaxMind [GeoLite2 ASN](https://dev.maxmind.com/geoip/docs/databases/asn?lang=en).

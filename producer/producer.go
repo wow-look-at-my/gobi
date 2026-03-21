@@ -6,8 +6,6 @@ package producer
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -15,9 +13,9 @@ import (
 	"time"
 
 	"github.com/automixer/gobi/db"
-	"github.com/golang/protobuf/proto"
-	"github.com/netsampler/goflow2/pb"
+	flowpb "github.com/netsampler/goflow2/v2/pb"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protodelim"
 )
 
 const maxConsumers = 4
@@ -134,42 +132,10 @@ func (g *GobiGf2) msgRoutine() {
 	msg := &flowpb.FlowMessage{}
 	for {
 		msg.Reset()
-		bMsgLen, err := g.inRdr.Peek(binary.MaxVarintLen64)
-		if err != nil && err != io.EOF {
-			log.Error(err)
-			log.Error("i/o error. quitting producer...")
-			return
-		}
-		if err == io.EOF {
+		err := protodelim.UnmarshalFrom(g.inRdr, msg)
+		if errors.Is(err, io.EOF) {
 			continue
 		}
-
-		msgLen, vn := proto.DecodeVarint(bMsgLen)
-		if msgLen == 0 {
-			log.Warning("cannot decode protobuf varint")
-			continue
-		}
-
-		_, err = g.inRdr.Discard(vn)
-		if err != nil {
-			log.Warning(err)
-			continue
-		}
-
-		binMsg := make([]byte, msgLen)
-
-		_, err = io.ReadFull(g.inRdr, binMsg)
-		if err != nil && err != io.EOF {
-			log.Warning(err)
-			continue
-		}
-		if err == io.EOF {
-			continue
-		}
-
-		binMsg = bytes.TrimSuffix(binMsg, []byte("\n"))
-
-		err = proto.Unmarshal(binMsg, msg)
 		if err != nil {
 			log.Warning(err)
 			continue
@@ -181,12 +147,11 @@ func (g *GobiGf2) msgRoutine() {
 
 func (g *GobiGf2) newFlow(msg *flowpb.FlowMessage) Flow {
 	f := Flow{
-		Fields: make(map[string]string, 19),
+		Fields: make(map[string]string, 18),
 	}
 
 	f.TimeRcvd = time.Now()
 	f.Fields["type"] = msg.Type.String()
-	f.Fields["flowdirection"] = g.FindDirection(msg.FlowDirection)
 	f.Fields["sampleraddress"] = g.FindIpAddr(msg.SamplerAddress)
 	f.Fields["srcaddr"] = g.FindIpAddr(msg.SrcAddr)
 	f.Fields["dstaddr"] = g.FindIpAddr(msg.DstAddr)
@@ -196,10 +161,10 @@ func (g *GobiGf2) newFlow(msg *flowpb.FlowMessage) Flow {
 	f.Fields["dstport"] = g.FindSvc(msg.Proto, msg.DstPort)
 	f.Fields["inif"] = fmt.Sprint(msg.InIf)
 	f.Fields["outif"] = fmt.Sprint(msg.OutIf)
-	f.Fields["srcas"] = g.FindASN(msg.SrcAddr, msg.SrcAS)
-	f.Fields["dstas"] = g.FindASN(msg.DstAddr, msg.DstAS)
+	f.Fields["srcas"] = g.FindASN(msg.SrcAddr, msg.SrcAs)
+	f.Fields["dstas"] = g.FindASN(msg.DstAddr, msg.DstAs)
 	f.Fields["nexthop"] = g.FindIpAddr(msg.NextHop)
-	f.Fields["nexthopas"] = g.FindASN(msg.NextHop, msg.NextHopAS)
+	f.Fields["nexthopas"] = g.FindASN(msg.NextHop, msg.NextHopAs)
 	f.Fields["srcnet"] = g.FindNetwork(msg.SrcAddr, msg.SrcNet)
 	f.Fields["dstnet"] = g.FindNetwork(msg.DstAddr, msg.DstNet)
 	f.Fields["srccountry"] = g.FindCountry(msg.SrcAddr)
