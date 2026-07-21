@@ -8,8 +8,8 @@ import (
 	"time"
 
 	flowpb "github.com/netsampler/goflow2/v2/pb"
-	"github.com/wow-look-at-my/testify/assert"
-	"github.com/wow-look-at-my/testify/require"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protodelim"
 )
 
@@ -24,25 +24,25 @@ func (m *mockConsumer) Consume(flow Flow) {
 func TestNewFlow(t *testing.T) {
 	g := &GobiGf2{}
 	msg := &flowpb.FlowMessage{
-		Type:		flowpb.FlowMessage_IPFIX,
-		SamplerAddress:	[]byte{10, 0, 0, 1},
-		SrcAddr:	[]byte{192, 168, 1, 1},
-		DstAddr:	[]byte{10, 0, 0, 2},
-		Etype:		0x0800,
-		Proto:		6,
-		SrcPort:	12345,
-		DstPort:	80,
-		InIf:		1,
-		OutIf:		2,
-		SrcAs:		64512,
-		DstAs:		15169,
-		NextHop:	[]byte{10, 0, 0, 254},
-		NextHopAs:	64512,
-		SrcNet:		24,
-		DstNet:		16,
-		Bytes:		1000,
-		Packets:	10,
-		SamplingRate:	1,
+		Type:           flowpb.FlowMessage_IPFIX,
+		SamplerAddress: []byte{10, 0, 0, 1},
+		SrcAddr:        []byte{192, 168, 1, 1},
+		DstAddr:        []byte{10, 0, 0, 2},
+		Etype:          0x0800,
+		Proto:          6,
+		SrcPort:        12345,
+		DstPort:        80,
+		InIf:           1,
+		OutIf:          2,
+		SrcAs:          64512,
+		DstAs:          15169,
+		NextHop:        []byte{10, 0, 0, 254},
+		NextHopAs:      64512,
+		SrcNet:         24,
+		DstNet:         16,
+		Bytes:          1000,
+		Packets:        10,
+		SamplingRate:   1,
 	}
 
 	f := g.newFlow(msg)
@@ -70,12 +70,12 @@ func TestNewFlow(t *testing.T) {
 func TestNewFlowNormalize(t *testing.T) {
 	g := &GobiGf2{normalize: true, srOverride: -1}
 	msg := &flowpb.FlowMessage{
-		Bytes:		500,
-		Packets:	5,
-		SamplingRate:	100,
-		SrcAddr:	[]byte{1, 2, 3, 4},
-		DstAddr:	[]byte{5, 6, 7, 8},
-		NextHop:	[]byte{9, 10, 11, 12},
+		Bytes:        500,
+		Packets:      5,
+		SamplingRate: 100,
+		SrcAddr:      []byte{1, 2, 3, 4},
+		DstAddr:      []byte{5, 6, 7, 8},
+		NextHop:      []byte{9, 10, 11, 12},
 	}
 
 	f := g.newFlow(msg)
@@ -88,12 +88,12 @@ func TestNewFlowNormalize(t *testing.T) {
 func TestNewFlowNormalizeWithOverride(t *testing.T) {
 	g := &GobiGf2{normalize: true, srOverride: 200}
 	msg := &flowpb.FlowMessage{
-		Bytes:		100,
-		Packets:	1,
-		SamplingRate:	50,	// Will be overridden to 200
-		SrcAddr:	[]byte{1, 2, 3, 4},
-		DstAddr:	[]byte{5, 6, 7, 8},
-		NextHop:	[]byte{9, 10, 11, 12},
+		Bytes:        100,
+		Packets:      1,
+		SamplingRate: 50, // Will be overridden to 200
+		SrcAddr:      []byte{1, 2, 3, 4},
+		DstAddr:      []byte{5, 6, 7, 8},
+		NextHop:      []byte{9, 10, 11, 12},
 	}
 
 	f := g.newFlow(msg)
@@ -106,12 +106,12 @@ func TestNewFlowNormalizeWithOverride(t *testing.T) {
 func TestNewFlowNoNormalize(t *testing.T) {
 	g := &GobiGf2{normalize: false}
 	msg := &flowpb.FlowMessage{
-		Bytes:		500,
-		Packets:	5,
-		SamplingRate:	100,
-		SrcAddr:	[]byte{1, 2, 3, 4},
-		DstAddr:	[]byte{5, 6, 7, 8},
-		NextHop:	[]byte{9, 10, 11, 12},
+		Bytes:        500,
+		Packets:      5,
+		SamplingRate: 100,
+		SrcAddr:      []byte{1, 2, 3, 4},
+		DstAddr:      []byte{5, 6, 7, 8},
+		NextHop:      []byte{9, 10, 11, 12},
 	}
 
 	f := g.newFlow(msg)
@@ -122,12 +122,12 @@ func TestNewFlowNoNormalize(t *testing.T) {
 func TestMsgRoutine(t *testing.T) {
 	// Create a protobuf message and encode it with protodelim
 	msg := &flowpb.FlowMessage{
-		Type:		flowpb.FlowMessage_NETFLOW_V9,
-		SrcAddr:	[]byte{10, 0, 0, 1},
-		DstAddr:	[]byte{10, 0, 0, 2},
-		NextHop:	[]byte{10, 0, 0, 254},
-		Bytes:		2000,
-		Packets:	20,
+		Type:    flowpb.FlowMessage_NETFLOW_V9,
+		SrcAddr: []byte{10, 0, 0, 1},
+		DstAddr: []byte{10, 0, 0, 2},
+		NextHop: []byte{10, 0, 0, 254},
+		Bytes:   2000,
+		Packets: 20,
 	}
 
 	var buf bytes.Buffer
@@ -135,9 +135,9 @@ func TestMsgRoutine(t *testing.T) {
 	require.Nil(t, err)
 
 	g := &GobiGf2{
-		inRdr:	bufio.NewReader(&buf),
-		flowCh:	make(chan Flow, 1),
-		doneCh:	make(chan struct{}),
+		inRdr:  bufio.NewReader(&buf),
+		flowCh: make(chan Flow, 1),
+		doneCh: make(chan struct{}),
 	}
 
 	go g.msgRoutine()
@@ -155,10 +155,10 @@ func TestMsgRoutine(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	g := &GobiGf2{
-		consumers:	make([]Consumer, 0, maxConsumers),
-		consCh:		make(chan Consumer, 1),
-		doneCh:		make(chan struct{}),
-		flowCh:		make(chan Flow),
+		consumers: make([]Consumer, 0, maxConsumers),
+		consCh:    make(chan Consumer, 1),
+		doneCh:    make(chan struct{}),
+		flowCh:    make(chan Flow),
 	}
 	go g.ctrlRoutine()
 
@@ -174,8 +174,8 @@ func TestRegister(t *testing.T) {
 
 func TestRegisterMaxConsumers(t *testing.T) {
 	g := &GobiGf2{
-		consumers:	make([]Consumer, maxConsumers),
-		consCh:		make(chan Consumer, 1),
+		consumers: make([]Consumer, maxConsumers),
+		consCh:    make(chan Consumer, 1),
 	}
 
 	err := g.Register(&mockConsumer{})
@@ -185,10 +185,10 @@ func TestRegisterMaxConsumers(t *testing.T) {
 
 func TestCtrlRoutine(t *testing.T) {
 	g := &GobiGf2{
-		consumers:	make([]Consumer, 0, maxConsumers),
-		consCh:		make(chan Consumer, 1),
-		doneCh:		make(chan struct{}),
-		flowCh:		make(chan Flow, 1),
+		consumers: make([]Consumer, 0, maxConsumers),
+		consCh:    make(chan Consumer, 1),
+		doneCh:    make(chan struct{}),
+		flowCh:    make(chan Flow, 1),
 	}
 	go g.ctrlRoutine()
 
@@ -199,9 +199,9 @@ func TestCtrlRoutine(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	testFlow := Flow{
-		Fields:		map[string]string{"type": "test"},
-		Bytes:		100,
-		Packets:	1,
+		Fields:  map[string]string{"type": "test"},
+		Bytes:   100,
+		Packets: 1,
 	}
 	g.flowCh <- testFlow
 
@@ -220,12 +220,12 @@ func TestMsgRoutineMultiple(t *testing.T) {
 	var buf bytes.Buffer
 	for i := 0; i < 3; i++ {
 		msg := &flowpb.FlowMessage{
-			Type:		flowpb.FlowMessage_IPFIX,
-			SrcAddr:	[]byte{10, 0, 0, byte(i + 1)},
-			DstAddr:	[]byte{10, 0, 0, 100},
-			NextHop:	[]byte{10, 0, 0, 254},
-			Bytes:		uint64((i + 1) * 1000),
-			Packets:	uint64((i + 1) * 10),
+			Type:    flowpb.FlowMessage_IPFIX,
+			SrcAddr: []byte{10, 0, 0, byte(i + 1)},
+			DstAddr: []byte{10, 0, 0, 100},
+			NextHop: []byte{10, 0, 0, 254},
+			Bytes:   uint64((i + 1) * 1000),
+			Packets: uint64((i + 1) * 10),
 		}
 		_, err := protodelim.MarshalTo(&buf, msg)
 		require.Nil(t, err)
@@ -233,9 +233,9 @@ func TestMsgRoutineMultiple(t *testing.T) {
 	}
 
 	g := &GobiGf2{
-		inRdr:	bufio.NewReader(&buf),
-		flowCh:	make(chan Flow, 3),
-		doneCh:	make(chan struct{}),
+		inRdr:  bufio.NewReader(&buf),
+		flowCh: make(chan Flow, 3),
+		doneCh: make(chan struct{}),
 	}
 
 	go g.msgRoutine()

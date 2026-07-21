@@ -6,36 +6,36 @@ import (
 	"testing"
 
 	"github.com/automixer/gobi/producer"
-	"github.com/wow-look-at-my/testify/assert"
-	"github.com/wow-look-at-my/testify/require"
 	"github.com/automixer/gobi/promexp"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFormatLabelSet(t *testing.T) {
 	tests := []struct {
-		name	string
-		in	[]string
-		want	[]string
+		name string
+		in   []string
+		want []string
 	}{
 		{
-			name:	"lowercase",
-			in:	[]string{"SrcAddr", "DstAddr"},
-			want:	[]string{"srcaddr", "dstaddr"},
+			name: "lowercase",
+			in:   []string{"SrcAddr", "DstAddr"},
+			want: []string{"srcaddr", "dstaddr"},
 		},
 		{
-			name:	"deduplicate",
-			in:	[]string{"SrcAddr", "SrcAddr", "DstAddr"},
-			want:	[]string{"srcaddr", "dstaddr"},
+			name: "deduplicate",
+			in:   []string{"SrcAddr", "SrcAddr", "DstAddr"},
+			want: []string{"srcaddr", "dstaddr"},
 		},
 		{
-			name:	"empty",
-			in:	[]string{},
-			want:	[]string{},
+			name: "empty",
+			in:   []string{},
+			want: []string{},
 		},
 		{
-			name:	"single",
-			in:	[]string{"Proto"},
-			want:	[]string{"proto"},
+			name: "single",
+			in:   []string{"Proto"},
+			want: []string{"proto"},
 		},
 	}
 
@@ -112,12 +112,12 @@ func TestParseExpCfg(t *testing.T) {
 	yCfg := appConfig{
 		Promexporters: []promexp.Config{
 			{
-				MetricsName:	"myexp",
-				MinBps:		100,
-				MinPps:		10,
-				FlowLife:	"10m",
-				MaxScrapeInt:	"3m",
-				LabelSet:	[]string{"SrcAddr", "DstAddr"},
+				MetricsName:  "myexp",
+				MinBps:       100,
+				MinPps:       10,
+				FlowLife:     "10m",
+				MaxScrapeInt: "3m",
+				LabelSet:     []string{"SrcAddr", "DstAddr"},
 			},
 		},
 	}
@@ -139,7 +139,7 @@ func TestParseExpCfg(t *testing.T) {
 func TestParseExpCfgDefaults(t *testing.T) {
 	yCfg := appConfig{
 		Promexporters: []promexp.Config{
-			{},	// empty config, should get defaults
+			{}, // empty config, should get defaults
 		},
 	}
 
@@ -159,8 +159,8 @@ func TestParseExpCfgInvalidDurations(t *testing.T) {
 	yCfg := appConfig{
 		Promexporters: []promexp.Config{
 			{
-				FlowLife:	"invalid",
-				MaxScrapeInt:	"also-invalid",
+				FlowLife:     "invalid",
+				MaxScrapeInt: "also-invalid",
 			},
 		},
 	}
@@ -195,9 +195,9 @@ func TestParseExpCfgMultiple(t *testing.T) {
 func TestParseGlobalCfg(t *testing.T) {
 	yCfg := appConfig{
 		Global: Config{
-			MetricsAddr:	":9310",
-			MetricsPath:	"/metrics",
-			CreateFifo:	false,
+			MetricsAddr: ":9310",
+			MetricsPath: "/metrics",
+			CreateFifo:  false,
 		},
 		Producer: producer.Config{
 			Input: "stdin",

@@ -1,15 +1,15 @@
 package db
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
-	"github.com/wow-look-at-my/testify/assert"
 )
 
 func TestFindDirection(t *testing.T) {
 	g := &GobiDb{}
 	tests := []struct {
-		dir	uint32
-		want	string
+		dir  uint32
+		want string
 	}{
 		{0, "in"},
 		{1, "out"},
@@ -82,8 +82,8 @@ func TestFindSvcNoPortName(t *testing.T) {
 func TestFindEtype(t *testing.T) {
 	g := &GobiDb{}
 	tests := []struct {
-		etype	uint32
-		want	string
+		etype uint32
+		want  string
 	}{
 		{0x0800, "IPv4"},
 		{0x0806, "ARP"},

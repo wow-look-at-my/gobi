@@ -5,33 +5,33 @@ import (
 	"time"
 
 	"github.com/automixer/gobi/producer"
-	"github.com/wow-look-at-my/testify/assert"
-	"github.com/wow-look-at-my/testify/require"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func makeFlow(fields map[string]string, bytes, packets uint64) producer.Flow {
 	return producer.Flow{
-		Fields:		fields,
-		Bytes:		bytes,
-		Packets:	packets,
-		TimeRcvd:	time.Now(),
+		Fields:   fields,
+		Bytes:    bytes,
+		Packets:  packets,
+		TimeRcvd: time.Now(),
 	}
 }
 
 func newTestGobiProm(labelSet []string) *GobiProm {
 	fc := &GobiProm{
-		metricsName:	"test",
-		labelSet:	labelSet,
-		flowLife:	5 * time.Minute,
-		maxScrapeInt:	2 * time.Minute,
-		fTable:		make(flowTable, fTableInitSize),
-		spinB:		newSpinBuff(2 * time.Minute),
-		bytesDesc:	prometheus.NewDesc("test_bytes", "", labelSet, nil),
-		packetsDesc:	prometheus.NewDesc("test_packets", "", labelSet, nil),
-		ubytesDesc:	prometheus.NewDesc("test_untracked_bytes", "", nil, nil),
-		upacketsDesc:	prometheus.NewDesc("test_untracked_packets", "", nil, nil),
-		lastScrape:	time.Now(),
+		metricsName:  "test",
+		labelSet:     labelSet,
+		flowLife:     5 * time.Minute,
+		maxScrapeInt: 2 * time.Minute,
+		fTable:       make(flowTable, fTableInitSize),
+		spinB:        newSpinBuff(2 * time.Minute),
+		bytesDesc:    prometheus.NewDesc("test_bytes", "", labelSet, nil),
+		packetsDesc:  prometheus.NewDesc("test_packets", "", labelSet, nil),
+		ubytesDesc:   prometheus.NewDesc("test_untracked_bytes", "", nil, nil),
+		upacketsDesc: prometheus.NewDesc("test_untracked_packets", "", nil, nil),
+		lastScrape:   time.Now(),
 	}
 	return fc
 }
@@ -81,8 +81,8 @@ func TestMergeToMainTable(t *testing.T) {
 	g.fTable["10.0.0.1"] = makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 100, 1)
 
 	newTable := flowTable{
-		"10.0.0.1":	makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 200, 2),
-		"10.0.0.2":	makeFlow(map[string]string{"srcaddr": "10.0.0.2"}, 300, 3),
+		"10.0.0.1": makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 200, 2),
+		"10.0.0.2": makeFlow(map[string]string{"srcaddr": "10.0.0.2"}, 300, 3),
 	}
 
 	g.mergeToMainTable(newTable)
@@ -97,15 +97,15 @@ func TestMergeToMainTable(t *testing.T) {
 
 func TestPruneUnderRate(t *testing.T) {
 	g := newTestGobiProm([]string{"srcaddr"})
-	g.minBps = 100	// 100 bps minimum
+	g.minBps = 100 // 100 bps minimum
 	g.minPps = 0
 
 	ft := flowTable{
-		"high":	makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 1000, 10),	// 8000 bps over 10s
-		"low":	makeFlow(map[string]string{"srcaddr": "10.0.0.2"}, 1, 1),	// 0.8 bps over 10s
+		"high": makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 1000, 10), // 8000 bps over 10s
+		"low":  makeFlow(map[string]string{"srcaddr": "10.0.0.2"}, 1, 1),     // 0.8 bps over 10s
 	}
 
-	g.pruneUnderRate(&ft, 10)	// 10 second interval
+	g.pruneUnderRate(&ft, 10) // 10 second interval
 
 	require.Equal(t, 1, len(ft))
 
@@ -126,7 +126,7 @@ func TestPruneUnderRateZeroInterval(t *testing.T) {
 		"a": makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 1000, 10),
 	}
 
-	g.pruneUnderRate(&ft, 0)	// zero interval => rate is 0
+	g.pruneUnderRate(&ft, 0) // zero interval => rate is 0
 
 	assert.Equal(t, 0, len(ft))
 
@@ -138,8 +138,8 @@ func TestPruneUnderRatePps(t *testing.T) {
 	g.minPps = 5
 
 	ft := flowTable{
-		"high":	makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 1000, 100),	// 10 pps over 10s
-		"low":	makeFlow(map[string]string{"srcaddr": "10.0.0.2"}, 1000, 10),	// 1 pps over 10s
+		"high": makeFlow(map[string]string{"srcaddr": "10.0.0.1"}, 1000, 100), // 10 pps over 10s
+		"low":  makeFlow(map[string]string{"srcaddr": "10.0.0.2"}, 1000, 10),  // 1 pps over 10s
 	}
 
 	g.pruneUnderRate(&ft, 10)
