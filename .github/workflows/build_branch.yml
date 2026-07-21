@@ -8,6 +8,12 @@ on:
         required: true
         default: 'main'
 
+permissions:
+  id-token: write
+  contents: write
+  actions: read
+  checks: read
+
 jobs:
   build:
     name: Build

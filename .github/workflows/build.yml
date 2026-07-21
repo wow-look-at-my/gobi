@@ -3,6 +3,12 @@ name: Build
 on:
   push:
 
+permissions:
+  id-token: write
+  contents: write
+  actions: read
+  checks: read
+
 jobs:
   build:
     name: Build
