@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -244,7 +245,7 @@ func TestParseGlobalCfgCreateFifo(t *testing.T) {
 	info, err := os.Stat(fifoPath)
 	require.Nil(t, err)
 
-	assert.NotEqual(t, 0, info.Mode()&os.ModeNamedPipe)
+	assert.NotEqual(t, fs.FileMode(0), info.Mode()&os.ModeNamedPipe)
 
 }
 
